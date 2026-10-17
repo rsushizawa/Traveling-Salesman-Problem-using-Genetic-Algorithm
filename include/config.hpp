@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
 #include <string>
 
 // A Config guarda só escolhas (enums e números), para continuar serializável
@@ -37,3 +38,12 @@ struct Config {
     std::uint64_t seed = 42;
     std::string outDir = "results/run";
 };
+
+// Nome de cada enum, igual ao aceito na linha de comando.
+const char* toString(Scenario s);
+const char* toString(CrossoverType c);
+const char* toString(MutationType m);
+const char* toString(SelectionType s);
+
+// Escreve a Config completa como JSON (conteúdo do config.json de cada execução).
+void writeConfigJson(const Config& cfg, std::ostream& out);
