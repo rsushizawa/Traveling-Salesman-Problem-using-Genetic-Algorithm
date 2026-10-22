@@ -35,8 +35,13 @@ struct Config {
     int stagnation = 200;  // épocas sem melhora antes de parar; 0 desativa
 
     // Execução
+    // Duas seeds: instanceSeed sorteia os pontos (fixa num experimento, para todas
+    // as configs resolverem o mesmo mapa); seed controla só o algoritmo genético
+    // (varia entre repetições).
+    std::uint64_t instanceSeed = 1;
     std::uint64_t seed = 42;
     std::string outDir = "results/run";
+    int routeEvery = 0;  // grava a rota também a cada N épocas; 0 = só quando o melhor muda
 };
 
 // Nome de cada enum, igual ao aceito na linha de comando.

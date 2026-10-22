@@ -69,7 +69,9 @@ void writeConfigJson(const Config& cfg, std::ostream& out) {
         << "  \"elitism\": " << cfg.elitism << ",\n"
         << "  \"maxEpochs\": " << cfg.maxEpochs << ",\n"
         << "  \"stagnation\": " << cfg.stagnation << ",\n"
+        << "  \"instanceSeed\": " << cfg.instanceSeed << ",\n"
         << "  \"seed\": " << cfg.seed << ",\n"
-        << "  \"outDir\": " << jsonString(cfg.outDir) << "\n"
+        << "  \"outDir\": " << jsonString(cfg.outDir) << ",\n"
+        << "  \"routeEvery\": " << cfg.routeEvery << "\n"
         << "}\n";
 }
