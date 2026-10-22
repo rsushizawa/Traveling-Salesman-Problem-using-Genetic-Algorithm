@@ -13,6 +13,7 @@ add_library(tsp_core
     src/cli.cpp
     src/config.cpp
     src/distance.cpp
+    src/logger.cpp
     src/points.cpp
 )
 target_include_directories(tsp_core PUBLIC include)

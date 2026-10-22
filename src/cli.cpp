@@ -114,8 +114,11 @@ void printUsage(std::ostream &out) {
          "  --stagnation N              épocas sem melhora (0 desativa)\n"
          "\n"
          "Execução:\n"
-         "  --seed S\n"
-         "  --out DIR                   pasta de saída\n";
+         "  --instance-seed S           seed dos pontos (mesma seed = mesmo mapa)\n"
+         "  --seed S                    seed do algoritmo genético\n"
+         "  --out DIR                   pasta de saída\n"
+         "  --route-every N             grava a rota a cada N épocas, além de\n"
+         "                              quando o melhor muda (0 desativa)\n";
 }
 
 Config parseArgs(int argc, char **argv) {
@@ -162,10 +165,14 @@ Config parseArgs(int argc, char **argv) {
       cfg.maxEpochs = parseInt(flag, value);
     else if (flag == "--stagnation")
       cfg.stagnation = parseInt(flag, value);
+    else if (flag == "--instance-seed")
+      cfg.instanceSeed = parseSeed(flag, value);
     else if (flag == "--seed")
       cfg.seed = parseSeed(flag, value);
     else if (flag == "--out")
       cfg.outDir = value;
+    else if (flag == "--route-every")
+      cfg.routeEvery = parseInt(flag, value);
     else
       throw std::invalid_argument("opção desconhecida: " + flag);
   }
