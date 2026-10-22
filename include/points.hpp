@@ -8,7 +8,7 @@
 std::vector<Point> uniformPoints(int n, double side, Rng& rng);
 
 // n pontos igualmente espaçados no círculo de centro (cx, cy) e raio r,
-// já embaralhados (senão a ordem dos índices seria a solução ótima).
+// já embaralhados (senão a ordem dos índices seria a solução ótima). Exige n >= 8.
 std::vector<Point> circlePoints(int n, double cx, double cy, double r, Rng& rng);
 
 // Comprimento ótimo conhecido para circlePoints: 2·n·r·sin(π/n).
