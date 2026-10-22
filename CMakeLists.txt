@@ -12,7 +12,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(tsp_core
     src/cli.cpp
     src/config.cpp
+    src/crossover.cpp
     src/distance.cpp
+    src/mutation.cpp
 )
 target_include_directories(tsp_core PUBLIC include)
 target_compile_options(tsp_core PUBLIC -Wall -Wextra)
