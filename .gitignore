@@ -66,3 +66,12 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Python
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+
+# Execuções brutas dos experimentos (experiment.json, summary.csv e figures/ vão pro git)
+experiments/*/runs/

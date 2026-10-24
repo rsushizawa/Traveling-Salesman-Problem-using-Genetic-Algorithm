@@ -1,2 +1,6 @@
 pytest
-
+pandas
+matplotlib
+scipy
+ipykernel
+-e .

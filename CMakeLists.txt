@@ -14,6 +14,8 @@ add_library(tsp_core
     src/config.cpp
     src/crossover.cpp
     src/distance.cpp
+    src/logger.cpp
+    src/points.cpp
     src/mutation.cpp
     src/selection.cpp
 )
