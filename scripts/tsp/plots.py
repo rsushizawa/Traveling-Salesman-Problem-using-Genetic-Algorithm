@@ -40,6 +40,7 @@ LABELS = {
     "worst": "pior comprimento",
     "final_mean": "comprimento médio final",
     "gap_pct": "distância do ótimo (%)",
+    "ratio_optimum": "comprimento / ótimo",
     "epochs": "épocas",
     "epoch_of_best": "época do melhor",
     "elapsed_ms": "tempo (ms)",
@@ -386,7 +387,11 @@ def default_figures(exp: str | Path | Experiment) -> list[Path]:
         scenarios = _levels(df["scenario"]) if "scenario" in df else [None]
         for scen in scenarios:
             sub = df if scen is None else df[df["scenario"] == scen]
-            y = "gap_pct" if scen == "circle" else "best"
+            y = "best"
+            if scen == "circle":
+                # Razão em vez de gap_pct: no ótimo o gap é ~0, que some no eixo log.
+                sub = sub.assign(ratio_optimum=sub["best"] / sub["optimum"])
+                y = "ratio_optimum"
             fig = sweep(sub, x="n", y=y, hue=f0, col=f1, logx=True, logy=True)
             saved.append(save(fig, exp, f"scaling_{scen}" if scen else "scaling"))
 
