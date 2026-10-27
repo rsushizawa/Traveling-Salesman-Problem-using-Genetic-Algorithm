@@ -7,41 +7,20 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colors import LinearSegmentedColormap
 
 from . import load
 from .experiment import Experiment, Run
 from .experiment import load as load_experiment
 
-# Paleta categórica validada para daltonismo nesta ordem; não reordenar.
-PALETTE = [
-    "#2a78d6",
-    "#eb6834",
-    "#1baf7a",
-    "#eda100",
-    "#e87ba4",
-    "#008300",
-    "#6250d6",
-    "#e34948",
-]
-SEQUENTIAL = LinearSegmentedColormap.from_list(
-    "tsp_blue", ["#cde2fb", "#86b6ef", "#3987e5", "#256abf", "#184f95", "#0d366b"]
-)
+# Cores padrão do matplotlib: ciclo tab10 e colormap viridis.
+PALETTE = list(mpl.colormaps["tab10"].colors)
+SEQUENTIAL = "viridis"
 
-SURFACE = "#fcfcfb"
-INK = "#0b0b0b"
-INK_SECONDARY = "#52514e"
-MUTED = "#898781"
-GRID = "#e1e0d9"
-AXIS = "#c3c2b7"
+SURFACE = "white"
+INK = "black"
+INK_SECONDARY = "dimgray"
 
 STYLE = {
-    "figure.facecolor": SURFACE,
-    "axes.facecolor": SURFACE,
-    "savefig.facecolor": SURFACE,
-    "axes.edgecolor": AXIS,
-    "axes.labelcolor": INK_SECONDARY,
-    "axes.titlecolor": INK,
     "axes.titlesize": 11,
     "axes.labelsize": 10,
     "axes.spines.top": False,
@@ -49,17 +28,10 @@ STYLE = {
     "axes.grid": True,
     "axes.grid.axis": "y",
     "axes.axisbelow": True,
-    "axes.prop_cycle": mpl.cycler(color=PALETTE),
-    "grid.color": GRID,
     "grid.linewidth": 0.8,
-    "xtick.color": MUTED,
-    "ytick.color": MUTED,
-    "xtick.labelcolor": INK_SECONDARY,
-    "ytick.labelcolor": INK_SECONDARY,
     "lines.linewidth": 2,
     "legend.frameon": False,
     "legend.fontsize": 9,
-    "font.family": "sans-serif",
 }
 
 LABELS = {
@@ -242,7 +214,7 @@ def heatmap(
         for (i, j), v in np.ndenumerate(table.values):
             if np.isnan(v):
                 continue
-            dark = hi > lo and (v - lo) / (hi - lo) > 0.55
+            dark = hi > lo and (v - lo) / (hi - lo) < 0.55
             ax.text(
                 j,
                 i,
@@ -264,36 +236,53 @@ def sweep(
     x: str,
     y: str = "best",
     hue: str | None = None,
+    col: str | None = None,
     logx: bool = False,
+    logy: bool = False,
 ) -> plt.Figure:
     """Parâmetro numérico no eixo x: mediana entre seeds com faixa interquartil."""
+    panels = [None] if col is None else _levels(df[col])
     palette = colors(df[hue]) if hue else {None: PALETTE[0]}
     with style():
-        fig, ax = plt.subplots(figsize=(5.5, 3.6))
-        for key, g in df.groupby(hue) if hue else [(None, df)]:
-            q = g.groupby(x)[y].quantile([0.25, 0.5, 0.75]).unstack()
-            c = palette[key]
-            ax.fill_between(q.index, q[0.25], q[0.75], color=c, alpha=0.18, linewidth=0)
-            ax.plot(
-                q.index,
-                q[0.5],
-                color=c,
-                marker="o",
-                markersize=6,
-                markeredgecolor=SURFACE,
-                markeredgewidth=1.5,
-                label=None if key is None else str(key),
-            )
-        if logx:
-            ax.set_xscale("log")
-        # Marcas só nos valores testados.
-        levels = _levels(df[x])
-        ax.set_xticks(levels, [f"{v:g}" for v in levels])
-        ax.minorticks_off()
-        ax.set_xlabel(label(x))
-        ax.set_ylabel(f"{label(y)} (mediana, IQR)")
+        fig, axes = plt.subplots(
+            1,
+            len(panels),
+            sharey=True,
+            squeeze=False,
+            figsize=(1.5 + 4 * len(panels), 3.6),
+        )
+        for ax, panel in zip(axes[0], panels):
+            sub = df if panel is None else df[df[col] == panel]
+            for key, g in sub.groupby(hue) if hue else [(None, sub)]:
+                q = g.groupby(x)[y].quantile([0.25, 0.5, 0.75]).unstack()
+                c = palette[key]
+                ax.fill_between(
+                    q.index, q[0.25], q[0.75], color=c, alpha=0.18, linewidth=0
+                )
+                ax.plot(
+                    q.index,
+                    q[0.5],
+                    color=c,
+                    marker="o",
+                    markersize=6,
+                    markeredgecolor=SURFACE,
+                    markeredgewidth=1.5,
+                    label=None if key is None else str(key),
+                )
+            if logx:
+                ax.set_xscale("log")
+            if logy:
+                ax.set_yscale("log")
+            # Marcas só nos valores testados.
+            levels = _levels(sub[x])
+            ax.set_xticks(levels, [f"{v:g}" for v in levels])
+            ax.minorticks_off()
+            if panel is not None:
+                ax.set_title(f"{label(col)} = {panel}")
+            ax.set_xlabel(label(x))
+        axes[0][0].set_ylabel(f"{label(y)} (mediana, IQR)")
         if hue:
-            _legend(fig, ax, hue)
+            _legend(fig, axes[0][-1], hue)
         fig.tight_layout()
     return fig
 
@@ -353,47 +342,87 @@ def save(
     fig: plt.Figure, exp: str | Path | Experiment, name: str, dpi: int = 200
 ) -> Path:
     exp = load_experiment(exp)
-    exp.figures_dir.mkdir(parents=True, exist_ok=True)
     path = exp.figures_dir / f"{name}.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
     return path
 
 
 def default_figures(exp: str | Path | Experiment) -> list[Path]:
-    """Gráficos padrão a partir dos fatores que variam no experimento."""
+    """Gráficos padrão a partir dos fatores que variam no experimento.
+
+    Com "problems" (cenário, n), cada problema ganha sua pasta em figures/
+    (ex.: figures/uniform_n500/) e scaling_<cenário>.png mostra o resultado por n.
+    """
     exp = load_experiment(exp)
     df = load.summary(exp)
     if "best" not in df or df["best"].isna().all():
         print(f"{exp.name}: stats.csv vazios, nada para plotar")
         return []
 
-    factors = load.factors(exp, df)
+    problem = [c for c in load.problem_factors(exp) if c in df and df[c].nunique() > 1]
+    factors = [f for f in load.factors(exp, df) if f not in problem]
     if isinstance(exp.definition.get("grid"), list):
         # Grids unidos não se cruzam (ex.: tamanho do torneio só existe no torneio):
         # cada combinação vira um nível de um fator só.
         factors = ["config"]
     f0 = factors[0] if factors else None
     f1 = factors[1] if len(factors) > 1 else None
-    saved = []
 
     hist = load.history(exp)
+    saved = []
+    for key, sub in df.groupby(problem) if problem else [((), df)]:
+        key = key if isinstance(key, tuple) else (key,)
+        folder = "_".join(
+            str(v) if c == "scenario" else f"{c}{v}" for c, v in zip(problem, key)
+        )
+        prefix = f"{folder}/" if folder else ""
+        saved += _problem_figures(
+            exp, sub, hist[hist["run"].isin(sub["run"])], f0, f1, prefix
+        )
+
+    if "n" in problem and f0:
+        scenarios = _levels(df["scenario"]) if "scenario" in df else [None]
+        for scen in scenarios:
+            sub = df if scen is None else df[df["scenario"] == scen]
+            y = "gap_pct" if scen == "circle" else "best"
+            fig = sweep(sub, x="n", y=y, hue=f0, col=f1, logx=True, logy=True)
+            saved.append(save(fig, exp, f"scaling_{scen}" if scen else "scaling"))
+
+    best_run = exp.dir / "runs" / df.loc[df["best"].idxmin(), "run"]
+    if not load.routes(best_run).empty:  # vazio com --save-routes 0
+        saved.append(save(route_evolution(best_run), exp, "best_route"))
+    return saved
+
+
+def _problem_figures(
+    exp: Experiment,
+    df: pd.DataFrame,
+    hist: pd.DataFrame,
+    f0: str | None,
+    f1: str | None,
+    prefix: str,
+) -> list[Path]:
+    """Convergência, distribuição e interação dos fatores em um problema só."""
+    saved = []
     col = f1 if f1 and df[f1].nunique() <= 4 else None
-    saved.append(save(convergence(hist, hue=f0, col=col), exp, "convergence"))
+    fig = convergence(hist, hue=f0, col=col)
+    saved.append(save(fig, exp, f"{prefix}convergence"))
     if f0:
         if pd.api.types.is_numeric_dtype(df[f0]):
             values = df[f0][df[f0] > 0]
             logx = len(values) == len(df) and values.max() / values.min() >= 20
-            saved.append(save(sweep(df, x=f0, hue=f1, logx=logx), exp, "sweep"))
+            fig = sweep(df, x=f0, hue=f1, logx=logx)
+            saved.append(save(fig, exp, f"{prefix}sweep"))
         else:
-            saved.append(save(box(df, x=f0, hue=f1), exp, "box"))
+            saved.append(save(box(df, x=f0, hue=f1), exp, f"{prefix}box"))
     if f1:
-        saved.append(save(heatmap(df, rows=f0, cols=f1), exp, "heatmap"))
+        fig = heatmap(df, rows=f0, cols=f1)
+        saved.append(save(fig, exp, f"{prefix}heatmap"))
     if "gap_pct" in df and df["gap_pct"].notna().any():
-        saved.append(save(box(df, x=f0 or "n", y="gap_pct", hue=f1), exp, "gap"))
-
-    best_run = df.loc[df["best"].idxmin(), "run"]
-    saved.append(save(route_evolution(exp.dir / "runs" / best_run), exp, "best_route"))
+        fig = box(df, x=f0 or "n", y="gap_pct", hue=f1)
+        saved.append(save(fig, exp, f"{prefix}gap"))
     return saved
 
 

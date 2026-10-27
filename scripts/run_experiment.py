@@ -18,10 +18,20 @@ def main() -> None:
         "--force", action="store_true", help="refaz execuções já concluídas"
     )
     parser.add_argument("--no-plots", action="store_true", help="não gera os gráficos")
+    parser.add_argument(
+        "--shard",
+        metavar="I/K",
+        help="roda só a parte I de K (0 <= I < K) de cada experimento; implica --no-plots",
+    )
     args = parser.parse_args()
+    shard = tuple(map(int, args.shard.split("/"))) if args.shard else None
 
     for path in args.experiments:
-        exp = experiment.run(path, jobs=args.jobs, ga=args.ga, force=args.force)
+        exp = experiment.run(
+            path, jobs=args.jobs, ga=args.ga, force=args.force, shard=shard
+        )
+        if shard:
+            continue
         if not args.no_plots:
             for fig in plots.default_figures(exp):
                 print(fig)

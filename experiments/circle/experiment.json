@@ -1,6 +1,0 @@
-{
-  "base": {"scenario": "circle", "radius": 500, "pop": 200, "max-epochs": 2000, "stagnation": 300,
-           "cross": "ox", "mutation": "inversion", "sel": "tournament"},
-  "grid": {"n": [20, 50, 100, 200]},
-  "seeds": 30
-}

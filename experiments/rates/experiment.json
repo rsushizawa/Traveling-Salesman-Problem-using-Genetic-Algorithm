@@ -1,8 +1,8 @@
 {
-  "base": {"scenario": "uniform", "n": 50, "pop": 200, "max-epochs": 1000, "stagnation": 200,
-           "cross": "ox", "sel": "tournament"},
-  "grid": {"mut": [0.01, 0.02, 0.05, 0.1, 0.2, 0.4],
-           "mutation": ["swap", "inversion"]},
-  "seeds": 30,
-  "instance_seeds": [1, 2, 3]
+  "base": {"pop": 200, "max-epochs": 5000, "stagnation": 500,
+           "cross": "ox", "mutation": "inversion", "sel": "tournament"},
+  "grid": {"mut": [0.01, 0.02, 0.05, 0.1, 0.2, 0.4]},
+  "problems": {"scenario": ["uniform", "circle"], "n": [50, 500]},
+  "seeds": 10,
+  "instance_seeds": [1]
 }
