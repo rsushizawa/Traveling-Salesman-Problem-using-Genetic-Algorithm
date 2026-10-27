@@ -7,6 +7,7 @@
 #include "distance.hpp"
 #include "logger.hpp"
 #include "points.hpp"
+#include "solver.hpp"
 #include "types.hpp"
 
 int main(int argc, char** argv) {
@@ -31,8 +32,8 @@ int main(int argc, char** argv) {
         Logger log(cfg, points);
         Rng rng(cfg.seed);
 
-        // O solver entra aqui quando estiver pronto:
-        // Individual best = Solver(cfg, dist, rng).run(log);
+        const Individual best = Solver(cfg, dist, rng).run(log);
+        std::cout << best.length << "\n";
     } catch (const std::exception& e) {
         std::cerr << "erro: " << e.what() << "\n";
         return 1;

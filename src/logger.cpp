@@ -17,7 +17,9 @@ std::ofstream openFile(const std::filesystem::path& path) {
 }  // namespace
 
 Logger::Logger(const Config& cfg, const std::vector<Point>& points)
-    : routeEvery_(cfg.routeEvery), bestSoFar_(std::numeric_limits<double>::infinity()) {
+    : routeEvery_(cfg.routeEvery),
+      saveRoutes_(cfg.saveRoutes),
+      bestSoFar_(std::numeric_limits<double>::infinity()) {
     const std::filesystem::path dir = cfg.outDir;
     std::filesystem::create_directories(dir);
 
@@ -57,7 +59,7 @@ void Logger::logEpoch(int epoch, const Population& pop) {
            << ',' << elapsedMs << '\n';
 
     const bool improved = best->length < bestSoFar_;
-    if (improved || (routeEvery_ > 0 && epoch % routeEvery_ == 0)) {
+    if (saveRoutes_ && (improved || (routeEvery_ > 0 && epoch % routeEvery_ == 0))) {
         routes_ << epoch << ',';
         for (std::size_t k = 0; k < best->route.size(); ++k) {
             if (k > 0) routes_ << ' ';

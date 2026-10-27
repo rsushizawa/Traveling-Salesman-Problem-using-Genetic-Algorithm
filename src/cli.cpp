@@ -118,7 +118,8 @@ void printUsage(std::ostream &out) {
          "  --seed S                    seed do algoritmo genético\n"
          "  --out DIR                   pasta de saída\n"
          "  --route-every N             grava a rota a cada N épocas, além de\n"
-         "                              quando o melhor muda (0 desativa)\n";
+         "                              quando o melhor muda (0 desativa)\n"
+         "  --save-routes 0|1           0 não grava rotas (útil para n grande)\n";
 }
 
 Config parseArgs(int argc, char **argv) {
@@ -173,6 +174,8 @@ Config parseArgs(int argc, char **argv) {
       cfg.outDir = value;
     else if (flag == "--route-every")
       cfg.routeEvery = parseInt(flag, value);
+    else if (flag == "--save-routes")
+      cfg.saveRoutes = parseInt(flag, value) != 0;
     else
       throw std::invalid_argument("opção desconhecida: " + flag);
   }

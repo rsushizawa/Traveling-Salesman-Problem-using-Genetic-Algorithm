@@ -3,8 +3,12 @@
 #include <cmath>
 
 DistanceMatrix::DistanceMatrix(const std::vector<Point>& points)
-    : n_(static_cast<int>(points.size())),
-      data_(points.size() * points.size(), 0.0) {
+    : n_(static_cast<int>(points.size())) {
+    if (n_ > kMaxCachedCities) {
+        points_ = points;
+        return;
+    }
+    data_.assign(points.size() * points.size(), 0.0);
     // Simétrica: calcula só i < j e espelha. A diagonal fica em 0.
     for (int i = 0; i < n_; ++i) {
         for (int j = i + 1; j < n_; ++j) {
