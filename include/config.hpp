@@ -42,6 +42,7 @@ struct Config {
     std::uint64_t seed = 42;
     std::string outDir = "results/run";
     int routeEvery = 0;  // grava a rota também a cada N épocas; 0 = só quando o melhor muda
+    bool saveRoutes = true;  // false: routes.csv fica só com o cabeçalho (n grande)
 };
 
 // Nome de cada enum, igual ao aceito na linha de comando.

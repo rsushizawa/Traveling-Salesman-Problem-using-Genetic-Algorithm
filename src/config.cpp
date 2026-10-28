@@ -72,6 +72,7 @@ void writeConfigJson(const Config& cfg, std::ostream& out) {
         << "  \"instanceSeed\": " << cfg.instanceSeed << ",\n"
         << "  \"seed\": " << cfg.seed << ",\n"
         << "  \"outDir\": " << jsonString(cfg.outDir) << ",\n"
-        << "  \"routeEvery\": " << cfg.routeEvery << "\n"
+        << "  \"routeEvery\": " << cfg.routeEvery << ",\n"
+        << "  \"saveRoutes\": " << (cfg.saveRoutes ? "true" : "false") << "\n"
         << "}\n";
 }

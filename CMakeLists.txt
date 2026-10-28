@@ -18,6 +18,7 @@ add_library(tsp_core
     src/points.cpp
     src/mutation.cpp
     src/selection.cpp
+    src/solver.cpp
 )
 target_include_directories(tsp_core PUBLIC include)
 target_compile_options(tsp_core PUBLIC -Wall -Wextra)

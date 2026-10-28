@@ -43,6 +43,21 @@ As chaves são as flags do `ga` sem `--`. Todas as configurações rodam nos mes
 seeds, então dá para compará-las em pares. Execuções já concluídas são puladas, então mudar o
 grid só roda as combinações novas.
 
+`"problems": {"scenario": ["uniform", "circle"], "n": [50, 500]}` repete o grid em cada
+problema sem mudar o rótulo da configuração; os gráficos saem por problema
+(`figures/uniform_n500/`) e `figures/scaling_<cenário>.png` mostra o resultado por n.
+
+### Na nuvem (GitHub Actions)
+
+`.github/workflows/experiments.yml` divide os experimentos em 8 máquinas
+(`run_experiment.py --shard I/8`) e junta tudo num job final. Para disparar:
+
+```bash
+git tag experiments-$(date +%F) && git push origin --tags   # ou: gh workflow run experiments
+gh run download --name results --dir experiments             # summary.csv e figures/
+gh run download --pattern 'runs-*' --dir experiments         # runs/ (para o notebook)
+```
+
 A análise fica em `notebooks/analysis.ipynb`: tabela por configuração (`compare.table`),
 convergência, boxplot, heatmap, testes de Friedman e Wilcoxon (`compare.friedman`,
 `compare.pairwise`) e evolução da melhor rota.

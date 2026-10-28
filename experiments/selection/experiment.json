@@ -1,9 +1,10 @@
 {
-  "base": {"scenario": "uniform", "n": 50, "pop": 200, "max-epochs": 1000, "stagnation": 200,
+  "base": {"pop": 200, "max-epochs": 5000, "stagnation": 500,
            "cross": "ox", "mutation": "inversion"},
   "grid": [{"sel": ["tournament"], "tournament": [2, 3, 5, 8]},
            {"sel": ["truncation"], "truncation": [0.2, 0.5]},
            {"sel": ["roulette", "alpha"]}],
-  "seeds": 30,
-  "instance_seeds": [1, 2, 3]
+  "problems": {"scenario": ["uniform", "circle"], "n": [50, 500]},
+  "seeds": 10,
+  "instance_seeds": [1]
 }

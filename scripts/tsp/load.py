@@ -132,13 +132,20 @@ def factors(exp: str | Path | Experiment, df: pd.DataFrame | None = None) -> lis
     exp = load_experiment(exp)
     df = summary(exp) if df is None else df
     grids = exp.definition.get("grid") or {}
+    problems = exp.definition.get("problems") or {}
     order = [
         FLAG_TO_COLUMN.get(k, k)
-        for g in (grids if isinstance(grids, list) else [grids])
+        for g in [*(grids if isinstance(grids, list) else [grids]), problems]
         for k in g
     ]
     varied = varied_columns(df)
     return sorted(varied, key=lambda c: order.index(c) if c in order else len(order))
+
+
+def problem_factors(exp: str | Path | Experiment) -> list[str]:
+    """Colunas que vêm de "problems" (cenário, tamanho), em vez do grid."""
+    exp = load_experiment(exp)
+    return [FLAG_TO_COLUMN.get(k, k) for k in exp.definition.get("problems") or {}]
 
 
 def _dir(run_dir: Path | Run) -> Path:

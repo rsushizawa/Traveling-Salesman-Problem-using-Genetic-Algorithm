@@ -19,13 +19,15 @@ public:
     Logger(const Config& cfg, const std::vector<Point>& points);
 
     // Registra uma época. Exige pop não vazia e com length já calculado.
-    // A rota do melhor vai para routes.csv quando ele melhora ou a cada cfg.routeEvery épocas.
+    // A rota do melhor vai para routes.csv quando ele melhora ou a cada cfg.routeEvery épocas
+    // (nunca, se cfg.saveRoutes for false).
     void logEpoch(int epoch, const Population& pop);
 
 private:
     std::ofstream stats_;
     std::ofstream routes_;
     int routeEvery_;
+    bool saveRoutes_;
     double bestSoFar_;
     std::chrono::steady_clock::time_point start_;
 };

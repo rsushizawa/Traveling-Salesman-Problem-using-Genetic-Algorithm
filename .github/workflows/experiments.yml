@@ -1,0 +1,75 @@
+name: experiments
+
+# Roda os experimentos divididos em SHARDS máquinas e junta tudo no fim.
+# Disparo: push de uma tag experiments-* (ex.: experiments-2026-10-27) ou manual.
+on:
+  push:
+    tags: ["experiments-*"]
+  workflow_dispatch:
+    inputs:
+      experiments:
+        description: experimentos (pastas em experiments/)
+        default: operators population rates selection
+
+env:
+  EXPERIMENTS: ${{ inputs.experiments || 'operators population rates selection' }}
+  SHARDS: 8
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+      - run: python scripts/run_experiment.py $EXPERIMENTS --shard ${{ matrix.shard }}/$SHARDS
+      # Com n grande, routes.csv tem uma rota inteira por época que melhorou (dezenas
+      # de MB); fica só o cabeçalho, como com --save-routes 0.
+      - if: always()
+        run: find experiments -path '*/runs/*/routes.csv' -size +1M -exec sed -i '2,$d' {} +
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runs-${{ matrix.shard }}
+          path: experiments/*/runs/
+          retention-days: 14
+
+  merge:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: runs-*
+          path: experiments
+          merge-multiple: true
+      # Execuções que faltarem (shard que falhou) rodam aqui; as prontas são puladas.
+      - run: python scripts/run_experiment.py $EXPERIMENTS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: |
+            experiments/*/summary.csv
+            experiments/*/figures/
+          retention-days: 30
